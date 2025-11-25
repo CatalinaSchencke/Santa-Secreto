@@ -42,7 +42,7 @@ export default function Page() {
           </div>
           
           <div className="text-center mt-8 p-4 bg-red-50 rounded-2xl">
-            <p className="text-gray-700 font-bold mb-1">¿Ya tienes un código de familia?</p>
+            <p className="text-gray-700 font-bold mb-1">¿Ya tienes un código de sorteo?</p>
             <p className="text-[#ce3b46] font-mono font-semibold">Visita /sorteo/TU-CODIGO</p>
           </div>
         </div>
