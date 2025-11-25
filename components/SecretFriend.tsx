@@ -30,7 +30,7 @@ export default function SecretFriend({ onNavigate }: SecretFriendProps) {
         const response = await fetch('/api/familia-perez/participants');
         if (response.ok) {
           const data = await response.json();
-          setParticipants(data);
+          setParticipants(data.participants || []);
         }
       } catch (error) {
         console.error('Error loading participants:', error);
