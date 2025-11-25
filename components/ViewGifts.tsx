@@ -20,6 +20,18 @@ interface ViewGiftsProps {
   onNavigate: (view: 'home' | 'secret-friend' | 'add-gift' | 'view-gifts') => void;
 }
 
+interface Participant {
+  id: string;
+  name: string;
+}
+
+interface Gift {
+  id: string;
+  name: string;
+  link?: string;
+  image?: string;
+}
+
 type Step = 'select' | 'results';
 
 export default function ViewGifts({ onNavigate }: ViewGiftsProps) {
@@ -71,9 +83,17 @@ export default function ViewGifts({ onNavigate }: ViewGiftsProps) {
     setLoading(true);
     
     try {
-      const friendGifts = await getGiftWishlist(selectedFriend);
-      setGifts(friendGifts);
-      setStep('results');
+      const person = participants.find(p => p.id === selectedFriend);
+      if (person) {
+        const response = await fetch(`/api/familia-perez/wishlist?person=${encodeURIComponent(person.name)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setGifts(data);
+          setStep('results');
+        } else {
+          alert('Error al obtener la lista de regalos. Por favor, intenta de nuevo.');
+        }
+      }
     } catch (error) {
       console.error('Error getting wishlist:', error);
       alert('Error al obtener la lista de regalos. Por favor, intenta de nuevo.');

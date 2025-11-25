@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import Modal from './Modal';
 import Spinner from './Spinner';
+
 
 interface Participant {
   id: string;
@@ -16,6 +18,11 @@ interface Gift {
 }
 interface AddGiftProps {
   onNavigate: (view: 'home' | 'secret-friend' | 'add-gift' | 'view-gifts') => void;
+}
+
+interface Participant {
+  id: string;
+  name: string;
 }
 
 type Step = 'select' | 'form';
@@ -34,6 +41,7 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
   const [loading, setLoading] = useState(false);
   const [hasExistingGifts, setHasExistingGifts] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   
   // Modal states
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -44,6 +52,22 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
     { name: '', link: '', image: '' },
     { name: '', link: '', image: '' },
   ]);
+
+  // Load participants from API
+  useEffect(() => {
+    const loadParticipants = async () => {
+      try {
+        const response = await fetch('/api/familia-perez/participants');
+        if (response.ok) {
+          const data = await response.json();
+          setParticipants(data);
+        }
+      } catch (error) {
+        console.error('Error loading participants:', error);
+      }
+    };
+    loadParticipants();
+  }, []);
 
   // Cargar participantes al montar el componente
   useEffect(() => {
@@ -107,6 +131,37 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
     setLoading(true);
     
     try {
+      const person = participants.find(p => p.id === selectedPerson);
+      if (person) {
+        // Load existing gifts from API
+        const response = await fetch(`/api/familia-perez/wishlist?person=${encodeURIComponent(person.name)}`);
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.length > 0) {
+            setHasExistingGifts(true);
+            // Pre-populate form with existing gifts
+            const formGifts: GiftForm[] = [
+              { name: '', link: '', image: '' },
+              { name: '', link: '', image: '' },
+              { name: '', link: '', image: '' },
+            ];
+            
+            data.forEach((gift: any, index: number) => {
+              if (index < 3) {
+                formGifts[index] = {
+                  name: gift.name,
+                  link: gift.link || '',
+                  image: gift.image || '',
+                };
+              }
+            });
+            
+            setGifts(formGifts);
+          } else {
+            setHasExistingGifts(false);
+          }
+        }
       // Load existing gifts if any
       const existingGifts = await getGiftWishlist(selectedPerson);
       
@@ -193,8 +248,27 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
     
     setLoading(true);
     try {
-      await addGiftsToWishlist(selectedPerson, validGifts);
-      setShowSuccessModal(true);
+      const person = participants.find(p => p.id === selectedPerson);
+      if (person) {
+        const response = await fetch('/api/familia-perez/wishlist', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            person: person.name,
+            gifts: validGifts
+          }),
+        });
+
+        if (response.ok) {
+          setShowSuccessModal(true);
+        } else {
+          const error = await response.json();
+          setErrorMessage(error.error || 'Error al guardar la lista de regalos');
+          setShowErrorModal(true);
+        }
+      }
     } catch (error) {
       console.error('Error saving wishlist:', error);
       setErrorMessage('Error al guardar la lista de regalos. Por favor, intenta de nuevo.');

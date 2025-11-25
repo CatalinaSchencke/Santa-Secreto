@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFamily, updateFamily } from '@/lib/familyFileStorage';
+import { getFamily, updateFamily } from '@/lib/supabaseStorage';
 
 export async function GET(
   request: NextRequest,
@@ -7,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { familyCode } = await params;
-    const family = getFamily(familyCode);
+    const family = await getFamily(familyCode);
     
     if (!family) {
       return NextResponse.json(
@@ -41,7 +41,7 @@ export async function POST(
       );
     }
 
-    const family = getFamily(familyCode);
+    const family = await getFamily(familyCode);
     
     if (!family) {
       return NextResponse.json(
@@ -71,7 +71,7 @@ export async function POST(
 
     const updatedParticipants = [...family.participants, newParticipant];
     
-    const success = updateFamily(familyCode, { participants: updatedParticipants });
+    const success = await updateFamily(familyCode, { participants: updatedParticipants });
     
     if (!success) {
       return NextResponse.json(
@@ -106,7 +106,7 @@ export async function DELETE(
       );
     }
 
-    const family = getFamily(familyCode);
+    const family = await getFamily(familyCode);
     
     if (!family) {
       return NextResponse.json(
@@ -119,7 +119,7 @@ export async function DELETE(
       p => p.id !== parseInt(participantId)
     );
 
-    const success = updateFamily(familyCode, { participants: updatedParticipants });
+    const success = await updateFamily(familyCode, { participants: updatedParticipants });
     
     if (!success) {
       return NextResponse.json(
