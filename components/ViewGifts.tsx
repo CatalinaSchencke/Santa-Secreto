@@ -1,8 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, ExternalLink, Gift as GiftIcon } from 'lucide-react';
 import Modal from './Modal';
 import Spinner from './Spinner';
-import { participants, getSecretFriend, getGiftWishlist, Gift } from '../data/mockData';
+
+interface Participant {
+  id: string;
+  name: string;
+}
+
+interface Gift {
+  id: string;
+  name: string;
+  link?: string;
+  image?: string;
+}
 // import imgChristmasTree from "/images/christmas-tree.png"; // Placeholder for Christmas tree
 
 interface ViewGiftsProps {
@@ -17,6 +28,38 @@ export default function ViewGifts({ onNavigate }: ViewGiftsProps) {
   const [showModal, setShowModal] = useState(false);
   const [gifts, setGifts] = useState<Gift[]>([]);
   const [loading, setLoading] = useState(false);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+
+  // Cargar participantes al montar el componente
+  useEffect(() => {
+    loadParticipants();
+  }, []);
+
+  const loadParticipants = async () => {
+    try {
+      const response = await fetch('/api/familia-perez/participants');
+      const data = await response.json();
+      if (response.ok) {
+        setParticipants(data.participants || []);
+      }
+    } catch (error) {
+      console.error('Error loading participants:', error);
+    }
+  };
+
+  const getGiftWishlist = async (person: string): Promise<Gift[]> => {
+    try {
+      const response = await fetch(`/api/familia-perez/wishlist?person=${encodeURIComponent(person)}`);
+      const data = await response.json();
+      if (response.ok) {
+        return data.gifts || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching wishlist:', error);
+      return [];
+    }
+  };
   
   const handleNext = () => {
     if (!selectedFriend) return;
