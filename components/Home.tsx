@@ -8,8 +8,8 @@ export default function Home({ onNavigate }: HomeProps) {
   return (
     <div className="bg-[#ce3b46]  min-h-screen py-5 flex justify-around gap-10 flex-col overflow-hidden">
       {/* Header */}
-      <div className=" p-6 lg:p-8 flex justify-center ">
-        <h1 className="font-bold text-white text-4xl md:text-5xl w-1/2 md:w-2/3 text-center ">
+      <div className=" pt-8 lg:p-8 flex justify-center ">
+        <h1 className="font-bold text-white text-4xl md:text-5xl w-2/3 text-center ">
           Bienvenida Familia Perez Rojel
         </h1>
       </div>
@@ -22,7 +22,7 @@ export default function Home({ onNavigate }: HomeProps) {
         <div className=" z-10  w-full flex flex-col items-center lg:items-start">
           {/* Tagline */}
           <div className="max-w-xl text-center lg:text-left mb-8 lg:mb-12">
-            <p className="font-medium text-white text-xl md:text-4xl">
+            <p className="font-medium text-white text-lg md:text-4xl">
               <span>No adivines, </span>
               <span className="font-bold">conoce</span>
               <span> exactamente qué </span>
@@ -110,7 +110,7 @@ export default function Home({ onNavigate }: HomeProps) {
       
       {/* Footer */}
       <div className="text-center z-10">
-        <p className="font-medium text-white text-base md:text-xl">
+        <p className="font-medium text-white text-base md:text-xl w-2/3 mx-auto">
           Este sitio fue hecho con mucho amor por Catalina.
         </p>
       </div>

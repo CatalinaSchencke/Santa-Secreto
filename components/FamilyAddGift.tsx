@@ -226,7 +226,7 @@ export default function FamilyAddGift({ familyCode, familyName, onNavigate }: Fa
       {/* Header */}
       <div className="p-6 lg:p-8 relative z-10 border-b border-white/20 flex justify-center">
         <h1 className="font-bold text-white text-2xl md:text-3xl lg:text-4xl text-center max-w-[50%]">
-          Bienvenida {familyName}
+          Bienvenido al sorteo de {familyName}
         </h1>
         <button
           onClick={() => onNavigate('home')}

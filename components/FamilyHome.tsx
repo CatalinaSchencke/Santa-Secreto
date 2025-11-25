@@ -163,7 +163,7 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
       <div className="p-6 lg:p-8 flex gap-5 justify-center">
         <div className="flex flex-col lg:flex-row items-center  gap-10 justify-center  w-full ">
             
-            <div className="flex flex-col items-center  gap-5 lg:w-1/2 w-2/3">
+            <div className="flex flex-col items-center  gap-5 lg:w-1/2 w-full">
         <h1 className="font-bold text-white text-4xl md:text-5xl text-center">
           Bienvenida {familyInfo.name}
         </h1>
@@ -172,35 +172,35 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
                  
             
               {/* Mobile: stack vertically */}
-              <div className="col-span-2 flex flex-col gap-6 w-full sm:w-auto md:hidden ">
+              <div className="col-span-2 flex flex-col gap-6 w-full  md:hidden ">
                 <button
                   onClick={() => onNavigate('secret-friend')}
-                  className="bg-white px-12 py-4 rounded-full hover:bg-gray-50 transition-colors"
+                  className="bg-white px-12 py-4 flex justify-center rounded-full hover:bg-gray-50 transition-colors"
                 >
-                  <p className="font-extrabold text-[#ce3b46] whitespace-nowrap">
+                  <p className="font-extrabold text-center text-[#ce3b46] flex">
                     Ver mi amigo secreto
                   </p>
                 </button>
                 <button
                   onClick={() => onNavigate('view-gifts')}
-                  className="bg-white px-12 py-4 rounded-full hover:bg-gray-50 transition-colors"
+                  className="bg-white px-12 py-4 rounded-full flex justify-center hover:bg-gray-50 transition-colors"
                 >
-                  <p className="font-extrabold text-[#ce3b46] whitespace-nowrap">
+                  <p className="font-extrabold text-center text-[#ce3b46]">
                     Ver lista de regalos
                   </p>
                 </button>
                 <button
                   onClick={() => onNavigate('add-gift')}
-                  className="bg-white px-12 py-4 rounded-full hover:bg-gray-50 transition-colors"
+                  className="bg-white px-12 py-4 rounded-full flex justify-center hover:bg-gray-50 transition-colors"
                 >
-                  <p className="font-extrabold text-[#ce3b46] whitespace-nowrap">
+                  <p className="font-extrabold text-center text-[#ce3b46]">
                     Añadir a mi lista de regalos
                   </p>
                 </button>
               </div>
               
               {/* Desktop: 2 on top, 1 on bottom with same width */}
-              <div className="hidden col-span-2 md:flex flex-col gap-6 max-w-3/4">
+              <div className="hidden col-span-2 md:flex flex-col gap-6 max-w-4/5">
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => onNavigate('add-gift')}
@@ -235,7 +235,7 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
         </div>
             {/* Family Info */}
             <div className="bg-white rounded-3xl shadow-2xl p-8 mb-8 lg:h-full flex flex-col justify-center items-center mx-auto w-full lg:w-1/2">
-              <h2 className="text-[#ce3b46] text-center mb-6 text-3xl font-bold">
+              <h2 className="text-[#ce3b46] text-center mb-6 text-2xl lg:text-3xl font-bold">
                 Información de la Familia
               </h2>
               <div className="space-y-3 text-center">
@@ -261,8 +261,8 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
         <div className="flex flex-col lg:space-x-8 gap-8 items-center h-full justify-center">
 
             {/* Participantes */}
-            <div className="bg-white rounded-3xl shadow-2xl p-8 mb-8 w-3/4 lg:h-full ">
-              <h2 className="text-[#ce3b46] text-center mb-6 text-3xl font-bold">
+            <div className="bg-white rounded-3xl shadow-2xl p-8 mb-8 w-5/6 lg:h-full ">
+              <h2 className="text-[#ce3b46] text-center mb-6 text-2xl lg:text-3xl font-bold">
                 👥 Participantes ({participants.length})
               </h2>
               
@@ -279,7 +279,7 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
                 <button
                   onClick={addParticipant}
                   disabled={isLoading}
-                  className="w-full bg-[#ce3b46] text-white py-4 rounded-full hover:bg-[#b83239] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-xl font-extrabold"
+                  className="w-full bg-[#ce3b46] text-white py-4 rounded-full hover:bg-[#b83239] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-lg font-extrabold"
                 >
                   {isLoading ? 'Agregando...' : 'Agregar Participante'}
                 </button>
