@@ -51,7 +51,11 @@ export default function FamilyAddGift({ familyCode, familyName, onNavigate }: Fa
 
   const loadParticipants = useCallback(async () => {
     try {
-      const response = await fetch(`/api/families/${familyCode}/participants`);
+      const apiPath = familyCode === 'PEREZ' 
+        ? '/api/familia-perez/participants' 
+        : `/api/families/${familyCode}/participants`;
+        
+      const response = await fetch(apiPath);
       if (response.ok) {
         const data = await response.json();
         setParticipants(data);
@@ -78,7 +82,11 @@ export default function FamilyAddGift({ familyCode, familyName, onNavigate }: Fa
       // Load existing gifts if any
       const selectedPersonName = participants.find(p => p.id.toString() === selectedPerson)?.name;
       if (selectedPersonName) {
-        const response = await fetch(`/api/families/${familyCode}/wishlist?person=${encodeURIComponent(selectedPersonName)}`);
+        const apiPath = familyCode === 'PEREZ' 
+          ? `/api/familia-perez/wishlist?person=${encodeURIComponent(selectedPersonName)}` 
+          : `/api/families/${familyCode}/wishlist?person=${encodeURIComponent(selectedPersonName)}`;
+          
+        const response = await fetch(apiPath);
         
         if (response.ok) {
           const data = await response.json();
@@ -170,7 +178,11 @@ export default function FamilyAddGift({ familyCode, familyName, onNavigate }: Fa
     try {
       const selectedPersonName = participants.find(p => p.id.toString() === selectedPerson)?.name;
       
-      const response = await fetch(`/api/families/${familyCode}/wishlist`, {
+      const apiPath = familyCode === 'PEREZ' 
+        ? `/api/familia-perez/wishlist?person=${encodeURIComponent(selectedPersonName || '')}` 
+        : `/api/families/${familyCode}/wishlist`;
+        
+      const response = await fetch(apiPath, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

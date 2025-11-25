@@ -59,12 +59,20 @@ export default function FamilySecretFriend({ familyCode, familyName, onNavigate 
     try {
       const selectedPersonName = participants.find(p => p.id.toString() === selectedPerson)?.name;
       
-      const response = await fetch(`/api/families/${familyCode}/assignments?person=${encodeURIComponent(selectedPersonName || '')}`);
+      const apiPath = familyCode === 'PEREZ' 
+        ? `/api/familia-perez/assignments?person=${encodeURIComponent(selectedPersonName || '')}` 
+        : `/api/families/${familyCode}/assignments?person=${encodeURIComponent(selectedPersonName || '')}`;
+        
+      const response = await fetch(apiPath);
       
       if (response.ok) {
         const data = await response.json();
         if (data.assignment) {
           setSecretFriend(data.assignment.receiver);
+          setStep('roulette');
+        } else if (data.secretFriend) {
+          // Handle Familia Perez response format
+          setSecretFriend(data.secretFriend);
           setStep('roulette');
         } else {
           setErrorMessage('No se encontró asignación. Asegúrate de que se haya generado el sorteo.');

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Home from '../../components/Home';
 import SecretFriend from '../../components/SecretFriend';
 import AddGift from '../../components/AddGift';
@@ -10,27 +10,6 @@ type View = 'home' | 'secret-friend' | 'add-gift' | 'view-gifts';
 
 export default function FamiliaPerezPage() {
   const [currentView, setCurrentView] = useState<View>('home');
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  // Auto-initialize assignments on app startup (for Vercel deployments) - SOLO para familia Perez original
-  useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        const { autoInitializeAssignments } = await import('../../data/mockData');
-        await autoInitializeAssignments();
-        console.log('🎄 Familia Perez initialized successfully for production');
-      } catch (error) {
-        console.warn('⚠️ Familia Perez initialization had issues, will work on-demand:', error);
-      } finally {
-        setIsInitialized(true);
-      }
-    };
-
-    // Initialize the original family on page load
-    if (!isInitialized) {
-      initializeApp();
-    }
-  }, [isInitialized]);
 
   const navigateTo = (view: View) => {
     setCurrentView(view);

@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Modal from './Modal';
 import RouletteAnimation from './RouletteAnimation';
 import Spinner from './Spinner';
-import { participants, getSecretFriend } from '../data/mockData';
+
 interface SecretFriendProps {
   onNavigate: (view: 'home' | 'secret-friend' | 'add-gift' | 'view-gifts') => void;
+}
+
+interface Participant {
+  id: string;
+  name: string;
 }
 
 type Step = 'select' | 'confirm' | 'roulette' | 'result';
@@ -16,6 +21,23 @@ export default function SecretFriend({ onNavigate }: SecretFriendProps) {
   const [showModal, setShowModal] = useState(false);
   const [secretFriend, setSecretFriend] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+
+  // Load participants from API
+  useEffect(() => {
+    const loadParticipants = async () => {
+      try {
+        const response = await fetch('/api/familia-perez/participants');
+        if (response.ok) {
+          const data = await response.json();
+          setParticipants(data);
+        }
+      } catch (error) {
+        console.error('Error loading participants:', error);
+      }
+    };
+    loadParticipants();
+  }, []);
   
   const handleNext = () => {
     if (!selectedPerson) return;
@@ -29,10 +51,18 @@ export default function SecretFriend({ onNavigate }: SecretFriendProps) {
     try {
       const person = participants.find(p => p.id === selectedPerson);
       if (person) {
-        const friend = await getSecretFriend(person.id);
-        if (friend) {
-          setSecretFriend(friend.name);
-          setStep('roulette');
+        const response = await fetch(`/api/familia-perez/assignments?person=${encodeURIComponent(person.name)}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.secretFriend) {
+            setSecretFriend(data.secretFriend);
+            setStep('roulette');
+          } else {
+            alert('No se encontró asignación. Asegúrate de que se haya generado el sorteo.');
+          }
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Error al obtener tu amigo secreto.');
         }
       }
     } catch (error) {

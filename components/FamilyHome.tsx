@@ -37,7 +37,11 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
   // Función para cargar participantes
   const loadParticipants = useCallback(async () => {
     try {
-      const response = await fetch(`/api/families/${familyInfo.code}/participants`);
+      const apiPath = familyInfo.code === 'PEREZ' 
+        ? '/api/familia-perez/participants' 
+        : `/api/families/${familyInfo.code}/participants`;
+        
+      const response = await fetch(apiPath);
       if (response.ok) {
         const data = await response.json();
         setParticipants(data);
@@ -64,7 +68,11 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/families/${familyInfo.code}/participants`, {
+      const apiPath = familyInfo.code === 'PEREZ' 
+        ? '/api/familia-perez/participants' 
+        : `/api/families/${familyInfo.code}/participants`;
+        
+      const response = await fetch(apiPath, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +123,11 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/families/${familyInfo.code}/assignments`, {
+      const apiPath = familyInfo.code === 'PEREZ' 
+        ? '/api/familia-perez/assignments' 
+        : `/api/families/${familyInfo.code}/assignments`;
+        
+      const response = await fetch(apiPath, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
