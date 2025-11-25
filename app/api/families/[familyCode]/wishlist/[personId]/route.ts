@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFamily, updateFamily } from '@/lib/familyFileStorage';
+import { getFamily, updateFamily } from '@/lib/supabaseStorage';
 
 export async function GET(
   request: NextRequest,
@@ -8,7 +8,7 @@ export async function GET(
   try {
     const { familyCode, personId } = await params;
     
-    const family = getFamily(familyCode);
+    const family = await getFamily(familyCode);
     
     if (!family) {
       return NextResponse.json(
@@ -46,7 +46,7 @@ export async function POST(
       );
     }
 
-    const family = getFamily(familyCode);
+    const family = await getFamily(familyCode);
     
     if (!family) {
       return NextResponse.json(
@@ -76,7 +76,7 @@ export async function POST(
 
     const updatedWishlist = [...family.wishlist, newWishlistItem];
     
-    const success = updateFamily(familyCode, { wishlist: updatedWishlist });
+    const success = await updateFamily(familyCode, { wishlist: updatedWishlist });
     
     if (!success) {
       return NextResponse.json(
@@ -111,7 +111,7 @@ export async function DELETE(
       );
     }
 
-    const family = getFamily(familyCode);
+    const family = await getFamily(familyCode);
     
     if (!family) {
       return NextResponse.json(
@@ -127,7 +127,7 @@ export async function DELETE(
       item => !(item.id === parseInt(itemId) && item.participantId === participantId)
     );
 
-    const success = updateFamily(familyCode, { wishlist: updatedWishlist });
+    const success = await updateFamily(familyCode, { wishlist: updatedWishlist });
     
     if (!success) {
       return NextResponse.json(

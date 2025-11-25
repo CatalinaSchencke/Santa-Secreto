@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node sync-participants.js",
+    "predev": "node initialize-familia-perez.js",
     "dev": "next dev",
+    "prebuild": "node initialize-familia-perez.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -14,12 +15,15 @@
     "supabase:functions:deploy": "supabase functions deploy make-server-252a0d41",
     "supabase:functions:serve": "supabase functions serve",
     "sync-participants": "node sync-participants.js",
-    "update-participants": "npm run sync-participants && pnpm supabase functions deploy make-server-252a0d41 --project-ref vmfgvdndjwwjztgcgjtx"
+    "update-participants": "npm run sync-participants && pnpm supabase functions deploy make-server-252a0d41 --project-ref vmfgvdndjwwjztgcgjtx",
+    "init-familia-perez": "node initialize-familia-perez.js"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
+    "@supabase/supabase-js": "^2.84.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.554.0",
     "next": "16.0.4",

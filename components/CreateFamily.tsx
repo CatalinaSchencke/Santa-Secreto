@@ -68,7 +68,7 @@ export function CreateFamily() {
     <div className="space-y-6">
       <div>
         <label className="block text-gray-700 mb-3 text-lg font-bold">
-          Nombre de la Familia *
+          Nombre del Sorteo/Familia *
         </label>
         <input
           type="text"
