@@ -1,0 +1,35 @@
+<svg width="400" height="500" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Tree trunk -->
+  <rect x="185" y="420" width="30" height="60" fill="#8b4513" stroke="#654321" stroke-width="2"/>
+  
+  <!-- Tree layers (from bottom to top) -->
+  <polygon points="200,420 120,340 280,340" fill="#2d8a2f" stroke="#1e5f21" stroke-width="2"/>
+  <polygon points="200,360 130,290 270,290" fill="#34a936" stroke="#2d8a2f" stroke-width="2"/>
+  <polygon points="200,310 140,250 260,250" fill="#3cb83f" stroke="#34a936" stroke-width="2"/>
+  <polygon points="200,270 150,210 250,210" fill="#4fc652" stroke="#3cb83f" stroke-width="2"/>
+  <polygon points="200,230 160,180 240,180" fill="#5dd85f" stroke="#4fc652" stroke-width="2"/>
+  
+  <!-- Star on top -->
+  <polygon points="200,170 205,185 220,185 208,195 213,210 200,200 187,210 192,195 180,185 195,185" fill="#ffd700" stroke="#ffc107" stroke-width="2"/>
+  
+  <!-- Decorations -->
+  <circle cx="170" cy="200" r="4" fill="#e74c3c"/>
+  <circle cx="230" cy="195" r="4" fill="#3498db"/>
+  <circle cx="200" cy="215" r="4" fill="#f39c12"/>
+  <circle cx="180" cy="240" r="4" fill="#9b59b6"/>
+  <circle cx="220" cy="235" r="4" fill="#e74c3c"/>
+  <circle cx="160" cy="260" r="4" fill="#3498db"/>
+  <circle cx="240" cy="255" r="4" fill="#f39c12"/>
+  <circle cx="190" cy="280" r="4" fill="#9b59b6"/>
+  <circle cx="210" cy="275" r="4" fill="#e74c3c"/>
+  <circle cx="150" cy="300" r="4" fill="#3498db"/>
+  <circle cx="250" cy="295" r="4" fill="#f39c12"/>
+  
+  <!-- Snow -->
+  <circle cx="80" cy="150" r="2" fill="#ecf0f1"/>
+  <circle cx="320" cy="180" r="2" fill="#ecf0f1"/>
+  <circle cx="100" cy="200" r="1.5" fill="#ecf0f1"/>
+  <circle cx="300" cy="220" r="1.5" fill="#ecf0f1"/>
+  <circle cx="70" cy="250" r="2" fill="#ecf0f1"/>
+  <circle cx="330" cy="270" r="2" fill="#ecf0f1"/>
+</svg>

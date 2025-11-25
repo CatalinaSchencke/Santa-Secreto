@@ -1,0 +1,39 @@
+{
+  "name": "santa-secreto-perez-rojel",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "predev": "node sync-participants.js",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "supabase": "supabase",
+    "supabase:login": "supabase login",
+    "supabase:functions:list": "supabase functions list",
+    "supabase:functions:deploy": "supabase functions deploy make-server-252a0d41",
+    "supabase:functions:serve": "supabase functions serve",
+    "sync-participants": "node sync-participants.js",
+    "update-participants": "npm run sync-participants && pnpm supabase functions deploy make-server-252a0d41 --project-ref vmfgvdndjwwjztgcgjtx"
+  },
+  "dependencies": {
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.554.0",
+    "next": "16.0.4",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-slick": "^0.31.0",
+    "recharts": "^3.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.22",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.4",
+    "supabase": "^2.62.5",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5"
+  }
+}
