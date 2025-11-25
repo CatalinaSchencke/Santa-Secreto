@@ -1,23 +1,23 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { participants } from '../data/mockData';
 
 interface RouletteAnimationProps {
   winnerName: string;
+  participants: string[];
   onComplete: () => void;
 }
 
-export default function RouletteAnimation({ winnerName, onComplete }: RouletteAnimationProps) {
+export default function RouletteAnimation({ winnerName, participants, onComplete }: RouletteAnimationProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSpinning, setIsSpinning] = useState(true);
-  const names = participants.map(p => p.name);
+  const names = participants;
   const completedRef = useRef(false);
   
   useEffect(() => {
     if (!isSpinning || completedRef.current) return;
     
     let spins = 0;
-    const maxSpins = 20;
+    const maxSpins = names.length + Math.floor(names.length * 0.5 * Math.random());
     let intervalId: NodeJS.Timeout;
     
     const spin = () => {
@@ -33,11 +33,11 @@ export default function RouletteAnimation({ winnerName, onComplete }: RouletteAn
           
           setTimeout(() => {
             onComplete();
-          }, 2000);
+          }, 2500);
         } else {
           setCurrentIndex((prev) => (prev + 1) % names.length);
         }
-      }, 100 + spins * 20);
+      }, 300 + spins * 100);
     };
     
     spin();
@@ -47,15 +47,16 @@ export default function RouletteAnimation({ winnerName, onComplete }: RouletteAn
         clearInterval(intervalId);
       }
     };
-  }, []);
+  }, [isSpinning, names, onComplete, winnerName]);
   
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px]">
       <motion.div
         key={currentIndex}
-        initial={{ y: -50, opacity: 0 }}
+        initial={{ y: -30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.1 }}
+        exit={{ y: 30, opacity: 0 }}
+        transition={{ duration: 0.7, ease: "easeInOut" }}
         className="relative"
       >
         <div className="bg-white rounded-3xl shadow-2xl px-16 py-12 border-4 border-[#ce3b46]">
@@ -67,7 +68,7 @@ export default function RouletteAnimation({ winnerName, onComplete }: RouletteAn
       
       {!isSpinning && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0.4, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}
           className="mt-8"

@@ -1,0 +1,43 @@
+{
+  "code": "FAM653",
+  "name": "Familia Schencke",
+  "eventDate": "2025-12-25",
+  "maxBudget": 40000,
+  "createdAt": "2025-11-25T17:45:17.032Z",
+  "participants": [
+    {
+      "id": 1,
+      "name": "Brandon",
+      "addedAt": "2025-11-25T18:02:24.784Z"
+    },
+    {
+      "id": 2,
+      "name": "Paula",
+      "addedAt": "2025-11-25T18:02:27.070Z"
+    },
+    {
+      "id": 3,
+      "name": "Catalina",
+      "addedAt": "2025-11-25T18:02:33.966Z"
+    }
+  ],
+  "assignments": [
+    {
+      "giver": "Paula",
+      "receiver": "Brandon",
+      "assignedAt": "2025-11-25T18:12:28.749Z"
+    },
+    {
+      "giver": "Brandon",
+      "receiver": "Catalina",
+      "assignedAt": "2025-11-25T18:12:28.749Z"
+    },
+    {
+      "giver": "Catalina",
+      "receiver": "Paula",
+      "assignedAt": "2025-11-25T18:12:28.749Z"
+    }
+  ],
+  "wishlist": [],
+  "updatedAt": "2025-11-25T18:12:28.750Z"
+}
