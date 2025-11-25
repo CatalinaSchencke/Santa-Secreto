@@ -1,8 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import Modal from './Modal';
 import Spinner from './Spinner';
-import { participants, addGiftsToWishlist, getGiftWishlist } from '../data/mockData';
+
+interface Participant {
+  id: string;
+  name: string;
+}
+
+interface Gift {
+  id: string;
+  name: string;
+  link?: string;
+  image?: string;
+}
 interface AddGiftProps {
   onNavigate: (view: 'home' | 'secret-friend' | 'add-gift' | 'view-gifts') => void;
 }
@@ -22,6 +33,7 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasExistingGifts, setHasExistingGifts] = useState(false);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   
   // Modal states
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -32,6 +44,58 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
     { name: '', link: '', image: '' },
     { name: '', link: '', image: '' },
   ]);
+
+  // Cargar participantes al montar el componente
+  useEffect(() => {
+    loadParticipants();
+  }, []);
+
+  const loadParticipants = async () => {
+    try {
+      const response = await fetch('/api/familia-perez/participants');
+      const data = await response.json();
+      if (response.ok) {
+        setParticipants(data.participants || []);
+      }
+    } catch (error) {
+      console.error('Error loading participants:', error);
+    }
+  };
+
+  const getGiftWishlist = async (person: string): Promise<Gift[]> => {
+    try {
+      const response = await fetch(`/api/familia-perez/wishlist?person=${encodeURIComponent(person)}`);
+      const data = await response.json();
+      if (response.ok) {
+        return data.gifts || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching wishlist:', error);
+      return [];
+    }
+  };
+
+  const addGiftsToWishlist = async (person: string, gifts: Gift[]) => {
+    try {
+      const response = await fetch('/api/familia-perez/wishlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ person, gifts }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error adding gifts to wishlist:', error);
+      throw error;
+    }
+  };
   
   const handleNext = () => {
     if (!selectedPerson) return;
@@ -55,7 +119,7 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
           { name: '', link: '', image: '' },
         ];
         
-        existingGifts.forEach((gift, index) => {
+        existingGifts.forEach((gift: Gift, index: number) => {
           if (index < 3) {
             formGifts[index] = {
               name: gift.name,
@@ -247,7 +311,7 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
                       
                       <button
                         onClick={() => handleClearGift(index)}
-                        className="text-gray-400 hover:text-[#ce3b46] transition-colors"
+                        className="text-[#a11a23] hover:text-[#ce3b46] transition-colors"
                       >
                         Limpiar
                       </button>

@@ -303,7 +303,7 @@ export default function FamilyAddGift({ familyCode, familyName, onNavigate }: Fa
                       
                       <button
                         onClick={() => handleClearGift(index)}
-                        className="text-gray-400 hover:text-[#ce3b46] transition-colors"
+                        className="text-[#a11a23] hover:text-[#ce3b46] transition-colors"
                       >
                         Limpiar
                       </button>
