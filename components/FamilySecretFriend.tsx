@@ -1,22 +1,52 @@
-import { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+'use client';
+
+import React, { useState, useEffect, useCallback } from 'react';
+
 import Modal from './Modal';
 import RouletteAnimation from './RouletteAnimation';
 import Spinner from './Spinner';
-import { participants, getSecretFriend } from '../data/mockData';
-interface SecretFriendProps {
+
+interface FamilySecretFriendProps {
+  familyCode: string;
+  familyName: string;
   onNavigate: (view: 'home' | 'secret-friend' | 'add-gift' | 'view-gifts') => void;
+}
+
+interface Participant {
+  id: number;
+  name: string;
 }
 
 type Step = 'select' | 'confirm' | 'roulette' | 'result';
 
-export default function SecretFriend({ onNavigate }: SecretFriendProps) {
+export default function FamilySecretFriend({ familyCode, familyName, onNavigate }: FamilySecretFriendProps) {
   const [step, setStep] = useState<Step>('select');
   const [selectedPerson, setSelectedPerson] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [secretFriend, setSecretFriend] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   
+  // Modal states
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const loadParticipants = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/families/${familyCode}/participants`);
+      if (response.ok) {
+        const data = await response.json();
+        setParticipants(data);
+      }
+    } catch (error) {
+      console.error('Error loading participants:', error);
+    }
+  }, [familyCode]);
+
+  useEffect(() => {
+    loadParticipants();
+  }, [loadParticipants]);
+
   const handleNext = () => {
     if (!selectedPerson) return;
     setShowModal(true);
@@ -27,17 +57,27 @@ export default function SecretFriend({ onNavigate }: SecretFriendProps) {
     setLoading(true);
     
     try {
-      const person = participants.find(p => p.id === selectedPerson);
-      if (person) {
-        const friend = await getSecretFriend(person.id);
-        if (friend) {
-          setSecretFriend(friend.name);
+      const selectedPersonName = participants.find(p => p.id.toString() === selectedPerson)?.name;
+      
+      const response = await fetch(`/api/families/${familyCode}/assignments?person=${encodeURIComponent(selectedPersonName || '')}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.assignment) {
+          setSecretFriend(data.assignment.receiver);
           setStep('roulette');
+        } else {
+          setErrorMessage('No se encontró asignación. Asegúrate de que se haya generado el sorteo.');
+          setShowErrorModal(true);
         }
+      } else {
+        setErrorMessage('Error al obtener tu amigo secreto. Por favor, intenta de nuevo.');
+        setShowErrorModal(true);
       }
     } catch (error) {
       console.error('Error getting secret friend:', error);
-      alert('Error al obtener tu amigo secreto. Por favor, intenta de nuevo.');
+      setErrorMessage('Error al obtener tu amigo secreto. Por favor, intenta de nuevo.');
+      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }
@@ -47,7 +87,7 @@ export default function SecretFriend({ onNavigate }: SecretFriendProps) {
     setStep('result');
   };
   
-  const selectedPersonName = participants.find(p => p.id === selectedPerson)?.name || '';
+  const selectedPersonName = participants.find(p => p.id.toString() === selectedPerson)?.name || '';
   
   return (
     <div className="min-h-screen bg-[#ce3b46] flex flex-col relative overflow-hidden">
@@ -59,13 +99,13 @@ export default function SecretFriend({ onNavigate }: SecretFriendProps) {
       {/* Header */}
       <div className="p-6 lg:p-8 relative z-10 border-b border-white/20 flex justify-center">
         <h1 className="font-bold text-white text-2xl md:text-3xl lg:text-4xl text-center max-w-[50%]">
-          Bienvenida Familia Perez Rojel
+          Bienvenida {familyName}
         </h1>
         <button
           onClick={() => onNavigate('home')}
           className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2 text-white hover:text-red-100 transition-colors font-medium"
         >
-          <ArrowLeft size={24} />
+          <span className="text-xl">←</span>
           <span className="hidden sm:inline">Volver</span>
         </button>
       </div>
@@ -98,7 +138,7 @@ export default function SecretFriend({ onNavigate }: SecretFriendProps) {
               >
                 <option value="">Selecciona tu nombre</option>
                 {participants.map((person) => (
-                  <option key={person.id} value={person.id}>
+                  <option key={person.id} value={person.id.toString()}>
                     {person.name}
                   </option>
                 ))}
@@ -162,11 +202,21 @@ export default function SecretFriend({ onNavigate }: SecretFriendProps) {
         title="Confirmación"
         message={(
           <span>
-            ¿Estás seguro que eres <strong>{selectedPersonName}</strong>?
+            ¿Estás seguro que eres <strong >{selectedPersonName}</strong>?
           </span>
         )}
         confirmText="Sí, soy yo"
         cancelText="No, volver"
+      />
+      
+      {/* Error Modal */}
+      <Modal
+        isOpen={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        onConfirm={() => setShowErrorModal(false)}
+        title="Error"
+        message={errorMessage}
+        confirmText="Aceptar"
       />
     </div>
   );

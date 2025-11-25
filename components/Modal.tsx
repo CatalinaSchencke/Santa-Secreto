@@ -1,12 +1,12 @@
-import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ReactNode } from 'react';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
-  message: string;
+  message: string | ReactNode;
   confirmText?: string;
   cancelText?: string;
 }
@@ -47,19 +47,23 @@ export default function Modal({
                   onClick={onClose}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <X size={24} />
+                  <span className="text-xl">×</span>
                 </button>
               </div>
               
-              <p className="text-gray-700 mb-8 text-lg font-medium">{message}</p>
+              <div className="text-gray-700 mb-8 text-lg font-medium">
+                {typeof message === 'string' ? message : message}
+              </div>
               
               <div className="flex gap-4 justify-end">
-                <button
-                  onClick={onClose}
-                  className="px-8 py-3 rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-bold"
-                >
-                  {cancelText}
-                </button>
+                {cancelText && (
+                  <button
+                    onClick={onClose}
+                    className="px-8 py-3 rounded-full border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors font-bold"
+                  >
+                    {cancelText}
+                  </button>
+                )}
                 <button
                   onClick={onConfirm}
                   className="px-8 py-3 rounded-full bg-[#ce3b46] text-white hover:bg-[#b83239] transition-colors font-bold"

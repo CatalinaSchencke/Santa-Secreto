@@ -1,13 +1,26 @@
-import { useState } from 'react';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+'use client';
+
+import React, { useState, useEffect, useCallback } from 'react';
+
 import Modal from './Modal';
 import Spinner from './Spinner';
-import { participants, addGiftsToWishlist, getGiftWishlist } from '../data/mockData';
-interface AddGiftProps {
+
+interface FamilyAddGiftProps {
+  familyCode: string;
+  familyName: string;
   onNavigate: (view: 'home' | 'secret-friend' | 'add-gift' | 'view-gifts') => void;
 }
 
-type Step = 'select' | 'form';
+interface Participant {
+  id: number;
+  name: string;
+}
+
+interface Gift {
+  name: string;
+  link: string;
+  image: string;
+}
 
 interface GiftForm {
   name: string;
@@ -15,13 +28,16 @@ interface GiftForm {
   image: string;
 }
 
-export default function AddGift({ onNavigate }: AddGiftProps) {
+type Step = 'select' | 'form';
+
+export default function FamilyAddGift({ familyCode, familyName, onNavigate }: FamilyAddGiftProps) {
   const [step, setStep] = useState<Step>('select');
   const [selectedPerson, setSelectedPerson] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [hasExistingGifts, setHasExistingGifts] = useState(false);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   
   // Modal states
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -32,54 +48,77 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
     { name: '', link: '', image: '' },
     { name: '', link: '', image: '' },
   ]);
-  
+
+  const loadParticipants = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/families/${familyCode}/participants`);
+      if (response.ok) {
+        const data = await response.json();
+        setParticipants(data);
+      }
+    } catch (error) {
+      console.error('Error loading participants:', error);
+    }
+  }, [familyCode]);
+
+  useEffect(() => {
+    loadParticipants();
+  }, [loadParticipants]);
+
   const handleNext = () => {
     if (!selectedPerson) return;
     setShowModal(true);
   };
-  
+
   const handleConfirm = async () => {
     setShowModal(false);
     setLoading(true);
     
     try {
       // Load existing gifts if any
-      const existingGifts = await getGiftWishlist(selectedPerson);
-      
-      if (existingGifts.length > 0) {
-        setHasExistingGifts(true);
-        // Pre-populate form with existing gifts
-        const formGifts: GiftForm[] = [
-          { name: '', link: '', image: '' },
-          { name: '', link: '', image: '' },
-          { name: '', link: '', image: '' },
-        ];
+      const selectedPersonName = participants.find(p => p.id.toString() === selectedPerson)?.name;
+      if (selectedPersonName) {
+        const response = await fetch(`/api/families/${familyCode}/wishlist?person=${encodeURIComponent(selectedPersonName)}`);
         
-        existingGifts.forEach((gift, index) => {
-          if (index < 3) {
-            formGifts[index] = {
-              name: gift.name,
-              link: gift.link || '',
-              image: gift.image || '',
-            };
+        if (response.ok) {
+          const data = await response.json();
+          const existingGifts = data.gifts || [];
+          
+          if (existingGifts.length > 0) {
+            setHasExistingGifts(true);
+            // Pre-populate form with existing gifts
+            const formGifts: GiftForm[] = [
+              { name: '', link: '', image: '' },
+              { name: '', link: '', image: '' },
+              { name: '', link: '', image: '' },
+            ];
+            
+            existingGifts.forEach((gift: Gift, index: number) => {
+              if (index < 3) {
+                formGifts[index] = {
+                  name: gift.name || '',
+                  link: gift.link || '',
+                  image: gift.image || '',
+                };
+              }
+            });
+            
+            setGifts(formGifts);
+          } else {
+            setHasExistingGifts(false);
           }
-        });
-        
-        setGifts(formGifts);
-      } else {
-        setHasExistingGifts(false);
+        }
       }
       
       setStep('form');
     } catch (error) {
       console.error('Error loading existing gifts:', error);
-      // Continue to form even if there's an error
       setStep('form');
     } finally {
       setLoading(false);
     }
   };
-  
+
   const handleImageUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -92,25 +131,25 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
       reader.readAsDataURL(file);
     }
   };
-  
+
   const handleRemoveImage = (index: number) => {
     const newGifts = [...gifts];
     newGifts[index].image = '';
     setGifts(newGifts);
   };
-  
+
   const handleGiftChange = (index: number, field: keyof GiftForm, value: string) => {
     const newGifts = [...gifts];
     newGifts[index][field] = value;
     setGifts(newGifts);
   };
-  
+
   const handleClearGift = (index: number) => {
     const newGifts = [...gifts];
     newGifts[index] = { name: '', link: '', image: '' };
     setGifts(newGifts);
   };
-  
+
   const handleSubmit = async () => {
     const validGifts = gifts
       .filter(g => g.name.trim() !== '')
@@ -120,17 +159,34 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
         link: g.link || undefined,
         image: g.image || undefined,
       }));
-    
+
     if (validGifts.length === 0) {
       setErrorMessage('Por favor, añade al menos un regalo con nombre');
       setShowErrorModal(true);
       return;
     }
-    
+
     setLoading(true);
     try {
-      await addGiftsToWishlist(selectedPerson, validGifts);
-      setShowSuccessModal(true);
+      const selectedPersonName = participants.find(p => p.id.toString() === selectedPerson)?.name;
+      
+      const response = await fetch(`/api/families/${familyCode}/wishlist`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          person: selectedPersonName,
+          gifts: validGifts,
+        }),
+      });
+
+      if (response.ok) {
+        setShowSuccessModal(true);
+      } else {
+        setErrorMessage('Error al guardar la lista de regalos. Por favor, intenta de nuevo.');
+        setShowErrorModal(true);
+      }
     } catch (error) {
       console.error('Error saving wishlist:', error);
       setErrorMessage('Error al guardar la lista de regalos. Por favor, intenta de nuevo.');
@@ -139,18 +195,18 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
       setLoading(false);
     }
   };
-  
+
   const handleSuccessConfirm = () => {
     setShowSuccessModal(false);
     onNavigate('home');
   };
-  
-  const selectedPersonName = participants.find(p => p.id === selectedPerson)?.name || '';
+
+  const selectedPersonName = participants.find(p => p.id.toString() === selectedPerson)?.name || '';
   const isFormValid = gifts.some(g => g.name.trim() !== '');
-  
+
   return (
     <div className="min-h-screen bg-[#ce3b46] flex flex-col relative overflow-hidden">
-      {/* Decorative Image */}
+      {/* Decorative Christmas Tree */}
       <div className="absolute left-12 bottom-12 hidden lg:block">
         <img src="/images/sleigh.png" alt="Trineo navideño" className="w-96 h-auto" />
       </div>
@@ -158,13 +214,13 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
       {/* Header */}
       <div className="p-6 lg:p-8 relative z-10 border-b border-white/20 flex justify-center">
         <h1 className="font-bold text-white text-2xl md:text-3xl lg:text-4xl text-center max-w-[50%]">
-          Bienvenida Familia Perez Rojel
+          Bienvenida {familyName}
         </h1>
         <button
           onClick={() => onNavigate('home')}
           className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-2 text-white hover:text-red-100 transition-colors font-medium"
         >
-          <ArrowLeft size={24} />
+          <span className="text-xl">←</span>
           <span className="hidden sm:inline">Volver</span>
         </button>
       </div>
@@ -198,7 +254,7 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
                 >
                   <option value="">Selecciona tu nombre</option>
                   {participants.map((person) => (
-                    <option key={person.id} value={person.id}>
+                    <option key={person.id} value={person.id.toString()}>
                       {person.name}
                     </option>
                   ))}
@@ -225,10 +281,10 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
               {/* Budget reminder */}
               <div className="bg-red-50 border-2 border-[#ce3b46] rounded-2xl p-6 mb-8">
                 <p className="text-[#ce3b46] text-center font-bold text-lg mb-2">
-                  💰 Máximo de regalo: $30.000 pesos chilenos
+                  💰 Recuerda el presupuesto acordado por la familia
                 </p>
                 <p className="text-gray-700 text-center font-medium">
-                  📅 Recuerda llevar tu regalo el 24 de Diciembre en la cena de Navidad de la familia Perez Rojel
+                  📅 Recuerda llevar tu regalo en la fecha acordada para el intercambio
                 </p>
               </div>
               
@@ -291,7 +347,7 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
                             htmlFor={`gift-image-${index}`}
                             className="w-full h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-[#ce3b46] hover:bg-red-50 transition-colors"
                           >
-                            <Upload className="text-gray-400 mb-2" size={32} />
+                            <span className="text-gray-400 mb-2 text-3xl">📤</span>
                             <span className="text-gray-500 font-medium">
                               Click para subir imagen
                             </span>
@@ -314,7 +370,7 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
                               onClick={() => handleRemoveImage(index)}
                               className="absolute top-2 right-2 bg-[#ce3b46] text-white p-1 rounded-full hover:bg-[#b83239] transition-colors"
                             >
-                              <X size={16} />
+                              <span className="text-sm">✕</span>
                             </button>
                           </div>
                         )}
@@ -379,7 +435,6 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
         title="Error"
         message={errorMessage}
         confirmText="Aceptar"
-        cancelText=""
       />
     </div>
   );
