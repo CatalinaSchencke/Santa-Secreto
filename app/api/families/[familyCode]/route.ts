@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFamily, updateFamily } from '@/lib/familyFileStorage';
+import { getFamily, updateFamily } from '@/lib/supabaseStorage';
 
 export async function GET(
   request: NextRequest,
@@ -15,7 +15,7 @@ export async function GET(
       );
     }
 
-    const family = getFamily(familyCode);
+    const family = await getFamily(familyCode);
     
     if (!family) {
       return NextResponse.json(
@@ -42,7 +42,7 @@ export async function PUT(
     const { familyCode } = await params;
     const updatedData = await request.json();
     
-    const success = updateFamily(familyCode, updatedData);
+    const success = await updateFamily(familyCode, updatedData);
     
     if (!success) {
       return NextResponse.json(
@@ -51,7 +51,7 @@ export async function PUT(
       );
     }
 
-    const updatedFamily = getFamily(familyCode);
+    const updatedFamily = await getFamily(familyCode);
     return NextResponse.json(updatedFamily);
   } catch (error) {
     console.error('Error updating family:', error);

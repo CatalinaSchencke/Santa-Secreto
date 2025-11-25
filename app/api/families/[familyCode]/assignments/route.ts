@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFamily, updateFamily } from '@/lib/familyFileStorage';
+import { getFamily, updateFamily } from '@/lib/supabaseStorage';
 
 // Función para generar asignaciones aleatorias
 function generateAssignments(participants: string[]): Array<{giver: string, receiver: string, assignedAt: string}> {
@@ -47,7 +47,7 @@ export async function GET(
       );
     }
 
-    const family = getFamily(familyCode);
+    const family = await getFamily(familyCode);
     
     if (!family) {
       return NextResponse.json(
@@ -84,7 +84,7 @@ export async function POST(
     const { familyCode } = await params;
     const { regenerate } = await request.json();
 
-    const family = getFamily(familyCode);
+    const family = await getFamily(familyCode);
     
     if (!family) {
       return NextResponse.json(
@@ -112,7 +112,7 @@ export async function POST(
     const participantNames = family.participants.map(p => p.name);
     const assignments = generateAssignments(participantNames);
 
-    const success = updateFamily(familyCode, { assignments });
+    const success = await updateFamily(familyCode, { assignments });
     
     if (!success) {
       return NextResponse.json(

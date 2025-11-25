@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createFamily, familyExists } from '@/lib/familyFileStorage';
+import { createFamily, familyExists } from '@/lib/supabaseStorage';
 
 // Generar código de 6 caracteres memorable
 function generateCode(familyName: string): string {
@@ -11,7 +11,7 @@ function generateCode(familyName: string): string {
 
 // Verificar si el código ya existe
 async function codeExists(code: string): Promise<boolean> {
-  return familyExists(code);
+  return await familyExists(code);
 }
 
 export async function POST(request: NextRequest) {
@@ -51,12 +51,12 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    // Guardar en archivo
-    const created = createFamily(familyInfo);
+    // Guardar en Supabase
+    const created = await createFamily(familyInfo);
     
     if (!created) {
       return NextResponse.json(
-        { message: 'Error al crear el archivo de la familia' }, 
+        { message: 'Error al crear la familia en la base de datos' }, 
         { status: 500 }
       );
     }

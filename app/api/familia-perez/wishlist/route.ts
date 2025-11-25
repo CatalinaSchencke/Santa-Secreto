@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { supabaseAdmin } from '@/lib/supabase';
 
 interface WishlistItem {
   personId: string;
@@ -8,10 +7,14 @@ interface WishlistItem {
 }
 
 interface Gift {
+  id: string;
   name: string;
-  link: string;
-  image: string;
+  link?: string;
+  image?: string;
 }
+
+const TABLE_NAME = 'kv_store_252a0d41';
+const WISHLIST_KEY = 'familia-perez:wishlist';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,20 +25,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Person parameter is required' }, { status: 400 });
     }
     
-    const wishlistPath = path.join(process.cwd(), 'data', 'wishlist.json');
+    // Get wishlist from Supabase
+    const { data: wishlistData } = await supabaseAdmin
+      .from(TABLE_NAME)
+      .select('value')
+      .eq('key', WISHLIST_KEY)
+      .maybeSingle();
     
-    if (!fs.existsSync(wishlistPath)) {
-      return NextResponse.json({ gifts: [] });
+    if (!wishlistData?.value) {
+      return NextResponse.json([]);
     }
     
-    const fileContent = fs.readFileSync(wishlistPath, 'utf-8');
-    const wishlists: WishlistItem[] = JSON.parse(fileContent);
-    
+    const wishlists: WishlistItem[] = wishlistData.value;
     const personWishlist = wishlists.find(w => w.personId === person);
     
-    return NextResponse.json({ 
-      gifts: personWishlist ? personWishlist.gifts : []
-    });
+    return NextResponse.json(personWishlist ? personWishlist.gifts : []);
   } catch (error) {
     console.error('Error reading wishlist:', error);
     return NextResponse.json({ error: 'Failed to load wishlist' }, { status: 500 });
@@ -44,49 +48,56 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const person = searchParams.get('person');
+    const { person, gifts } = await request.json();
     
     if (!person) {
       return NextResponse.json({ error: 'Person parameter is required' }, { status: 400 });
     }
     
-    const { gifts } = await request.json();
-    
     if (!Array.isArray(gifts)) {
       return NextResponse.json({ error: 'Gifts must be an array' }, { status: 400 });
     }
     
-    const wishlistPath = path.join(process.cwd(), 'data', 'wishlist.json');
-    let wishlists: WishlistItem[] = [];
+    // Get current wishlist from Supabase
+    const { data: wishlistData } = await supabaseAdmin
+      .from(TABLE_NAME)
+      .select('value')
+      .eq('key', WISHLIST_KEY)
+      .maybeSingle();
     
-    if (fs.existsSync(wishlistPath)) {
-      const fileContent = fs.readFileSync(wishlistPath, 'utf-8');
-      wishlists = JSON.parse(fileContent);
-    }
+    let wishlists: WishlistItem[] = wishlistData?.value || [];
     
     // Remove existing wishlist for this person
     wishlists = wishlists.filter(w => w.personId !== person);
     
     // Add new wishlist
-    if (gifts.length > 0) {
+    const validGifts = gifts.filter((gift: Gift) => gift.name && gift.name.trim() !== '');
+    
+    if (validGifts.length > 0) {
       wishlists.push({
         personId: person,
-        gifts: gifts.filter((gift: Gift) => gift.name.trim() !== '')
+        gifts: validGifts
       });
     }
     
-    // Ensure data directory exists
-    const dataDir = path.join(process.cwd(), 'data');
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+    // Save to Supabase
+    const { error } = await supabaseAdmin
+      .from(TABLE_NAME)
+      .upsert({
+        key: WISHLIST_KEY,
+        value: wishlists
+      });
+    
+    if (error) {
+      console.error('Error saving wishlist to Supabase:', error);
+      return NextResponse.json({ error: 'Failed to save wishlist' }, { status: 500 });
     }
     
-    fs.writeFileSync(wishlistPath, JSON.stringify(wishlists, null, 2));
+    console.log(`✅ Saved wishlist for ${person} with ${validGifts.length} gifts`);
     
     return NextResponse.json({ 
       message: 'Wishlist saved successfully',
-      giftsCount: gifts.filter((gift: Gift) => gift.name.trim() !== '').length
+      giftsCount: validGifts.length
     });
   } catch (error) {
     console.error('Error saving wishlist:', error);

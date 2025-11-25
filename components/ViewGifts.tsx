@@ -1,12 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, ExternalLink, Gift as GiftIcon } from 'lucide-react';
 import Modal from './Modal';
 import Spinner from './Spinner';
-import { participants, getSecretFriend, getGiftWishlist, Gift } from '../data/mockData';
-// import imgChristmasTree from "/images/christmas-tree.png"; // Placeholder for Christmas tree
 
 interface ViewGiftsProps {
   onNavigate: (view: 'home' | 'secret-friend' | 'add-gift' | 'view-gifts') => void;
+}
+
+interface Participant {
+  id: string;
+  name: string;
+}
+
+interface Gift {
+  id: string;
+  name: string;
+  link?: string;
+  image?: string;
 }
 
 type Step = 'select' | 'results';
@@ -17,6 +27,23 @@ export default function ViewGifts({ onNavigate }: ViewGiftsProps) {
   const [showModal, setShowModal] = useState(false);
   const [gifts, setGifts] = useState<Gift[]>([]);
   const [loading, setLoading] = useState(false);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+
+  // Load participants from API
+  useEffect(() => {
+    const loadParticipants = async () => {
+      try {
+        const response = await fetch('/api/familia-perez/participants');
+        if (response.ok) {
+          const data = await response.json();
+          setParticipants(data);
+        }
+      } catch (error) {
+        console.error('Error loading participants:', error);
+      }
+    };
+    loadParticipants();
+  }, []);
   
   const handleNext = () => {
     if (!selectedFriend) return;
@@ -28,9 +55,17 @@ export default function ViewGifts({ onNavigate }: ViewGiftsProps) {
     setLoading(true);
     
     try {
-      const friendGifts = await getGiftWishlist(selectedFriend);
-      setGifts(friendGifts);
-      setStep('results');
+      const person = participants.find(p => p.id === selectedFriend);
+      if (person) {
+        const response = await fetch(`/api/familia-perez/wishlist?person=${encodeURIComponent(person.name)}`);
+        if (response.ok) {
+          const data = await response.json();
+          setGifts(data);
+          setStep('results');
+        } else {
+          alert('Error al obtener la lista de regalos. Por favor, intenta de nuevo.');
+        }
+      }
     } catch (error) {
       console.error('Error getting wishlist:', error);
       alert('Error al obtener la lista de regalos. Por favor, intenta de nuevo.');

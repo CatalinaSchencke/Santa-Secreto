@@ -51,7 +51,7 @@ export default function SecretFriend({ onNavigate }: SecretFriendProps) {
     try {
       const person = participants.find(p => p.id === selectedPerson);
       if (person) {
-        const response = await fetch(`/api/familia-perez/assignments?person=${encodeURIComponent(person.name)}`);
+        const response = await fetch(`/api/familia-perez/assignments?person=${encodeURIComponent(person.id)}`);
         if (response.ok) {
           const data = await response.json();
           if (data.secretFriend) {
@@ -59,6 +59,31 @@ export default function SecretFriend({ onNavigate }: SecretFriendProps) {
             setStep('roulette');
           } else {
             alert('No se encontró asignación. Asegúrate de que se haya generado el sorteo.');
+          }
+        } else if (response.status === 404) {
+          // If no assignments found, try to generate them automatically
+          try {
+            const generateResponse = await fetch('/api/familia-perez/assignments', { method: 'POST' });
+            if (generateResponse.ok) {
+              // Now retry getting the assignment
+              const retryResponse = await fetch(`/api/familia-perez/assignments?person=${encodeURIComponent(person.id)}`);
+              if (retryResponse.ok) {
+                const retryData = await retryResponse.json();
+                if (retryData.secretFriend) {
+                  setSecretFriend(retryData.secretFriend);
+                  setStep('roulette');
+                } else {
+                  alert('Error al generar asignaciones. Por favor, intenta de nuevo.');
+                }
+              } else {
+                alert('Error al obtener asignación después de generar el sorteo.');
+              }
+            } else {
+              alert('Error al generar el sorteo automático. Por favor, intenta de nuevo.');
+            }
+          } catch (genError) {
+            console.error('Error generating assignments:', genError);
+            alert('Error al generar asignaciones automáticamente.');
           }
         } else {
           const error = await response.json();
