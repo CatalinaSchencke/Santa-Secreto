@@ -1,10 +1,40 @@
 import Image from 'next/image';
+import { useState } from 'react';
 
 interface HomeProps {
   onNavigate: (view: 'home' | 'secret-friend' | 'add-gift' | 'view-gifts') => void;
 }
 
 export default function Home({ onNavigate }: HomeProps) {
+  const [syncLoading, setSyncLoading] = useState(false);
+
+  const handleSyncWithSheets = async () => {
+    setSyncLoading(true);
+    
+    try {
+      // Llamar directamente a nuestra API que manejará Google Sheets
+      const syncResponse = await fetch('/api/familia-perez/sync-sheets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (syncResponse.ok) {
+        const result = await syncResponse.json();
+        alert(`✅ Sincronización exitosa!\nUsuarios actualizados: ${result.stats.totalUsers}\nTotal de regalos: ${result.stats.totalGifts}`);
+      } else {
+        const errorData = await syncResponse.json();
+        throw new Error(errorData.error || 'Error en la sincronización');
+      }
+      
+    } catch (error) {
+      console.error('Error sincronizando:', error);
+      alert(`❌ Error al sincronizar los regalos: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    } finally {
+      setSyncLoading(false);
+    }
+  };
   return (
     <div className="bg-[#ce3b46]  min-h-screen py-5 flex justify-around gap-10 flex-col overflow-hidden">
       {/* Header */}
@@ -110,9 +140,18 @@ export default function Home({ onNavigate }: HomeProps) {
       
       {/* Footer */}
       <div className="text-center z-10">
-        <p className="font-medium text-white text-base md:text-xl w-2/3 mx-auto">
+        <p className="font-medium text-white text-base md:text-xl w-2/3 mx-auto mb-4">
           Este sitio fue hecho con mucho amor por Catalina.
         </p>
+        <button 
+          onClick={handleSyncWithSheets}
+          disabled={syncLoading}
+          className="bg-white px-6 py-3 rounded-full hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <p className="font-bold text-[#ce3b46] text-sm md:text-base">
+            {syncLoading ? 'Sincronizando...' : 'Sincronizar Regalos'}
+          </p>
+        </button>
       </div>
     </div>
   );
