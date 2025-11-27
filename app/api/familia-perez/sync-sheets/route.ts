@@ -65,9 +65,19 @@ export async function POST() {
       );
     }
 
-    const newWishlist: { [key: string]: Array<{ id: string; name: string; link?: string; image?: string }> } = {};
+    // 🔄 STEP 1: Obtener wishlist actual de Supabase
+    const { data: currentWishlistData } = await supabaseAdmin
+      .from(TABLE_NAME)
+      .select('value')
+      .eq('key', 'familia-perez:wishlist')
+      .single();
 
-    // Procesar cada fila del spreadsheet
+    const currentWishlist = currentWishlistData?.value || {};
+    console.log('📋 Wishlist actual cargado');
+
+    // 🔄 STEP 2: Procesar datos del Google Sheets
+    const sheetsGifts: { [key: string]: Array<{ id: string; name: string; link?: string; image?: string }> } = {};
+
     sheetData.forEach((row: (string | number)[], index: number) => {
       const userId = SPREADSHEET_ORDER_TO_USER_ID[index];
       
@@ -88,10 +98,10 @@ export async function POST() {
       
       const gifts = [];
       
-      // Agregar regalo 1 si existe
+      // Agregar regalo 1 si existe (ID con prefijo 'gs' para Google Sheets)
       if (gift1 && String(gift1).trim()) {
         gifts.push({
-          id: `${userId}-1`,
+          id: `gs-${userId}-1`,
           name: String(gift1).trim(),
           link: link1 && String(link1).trim() ? String(link1).trim() : undefined,
           image: undefined
@@ -101,7 +111,7 @@ export async function POST() {
       // Agregar regalo 2 si existe
       if (gift2 && String(gift2).trim()) {
         gifts.push({
-          id: `${userId}-2`, 
+          id: `gs-${userId}-2`, 
           name: String(gift2).trim(),
           link: link2 && String(link2).trim() ? String(link2).trim() : undefined,
           image: undefined
@@ -111,7 +121,7 @@ export async function POST() {
       // Agregar regalo 3 si existe
       if (gift3 && String(gift3).trim()) {
         gifts.push({
-          id: `${userId}-3`,
+          id: `gs-${userId}-3`,
           name: String(gift3).trim(), 
           link: link3 && String(link3).trim() ? String(link3).trim() : undefined,
           image: undefined
@@ -119,37 +129,76 @@ export async function POST() {
       }
       
       if (gifts.length > 0) {
-        newWishlist[userId] = gifts;
+        sheetsGifts[userId] = gifts;
       }
     });
 
-    // Actualizar wishlist en Supabase
+    // 🔄 STEP 3: Combinar datos (Google Sheets + App)
+    const combinedWishlist: { [key: string]: Array<{ id: string; name: string; link?: string; image?: string }> } = {};
+
+    // Obtener todos los userIds únicos
+    const allUserIds = new Set([...Object.keys(currentWishlist), ...Object.keys(sheetsGifts)]);
+
+    allUserIds.forEach(userId => {
+      const currentGifts = currentWishlist[userId] || [];
+      const sheetsUserGifts = sheetsGifts[userId] || [];
+
+      // Separar regalos de la app (sin prefijo 'gs-') de los del Google Sheets
+      const appGifts = currentGifts.filter((gift: { id: string; name: string; link?: string; image?: string }) => !gift.id.startsWith('gs-'));
+      
+      // Combinar: primero Google Sheets, luego los de la app
+      const combinedGifts = [...sheetsUserGifts, ...appGifts];
+
+      if (combinedGifts.length > 0) {
+        combinedWishlist[userId] = combinedGifts;
+      }
+    });
+
+    console.log(`🔄 Combinación completada: ${Object.keys(combinedWishlist).length} usuarios`);
+
+    // 🔄 STEP 4: Actualizar wishlist combinado en Supabase
     const { error } = await supabaseAdmin
       .from(TABLE_NAME)
       .upsert({
         key: 'familia-perez:wishlist',
-        value: newWishlist
+        value: combinedWishlist
       });
 
     if (error) {
-      console.error('Error updating wishlist:', error);
+      console.error('❌ Error updating combined wishlist:', error);
       return NextResponse.json(
         { error: 'Failed to update wishlist' }, 
         { status: 500 }
       );
     }
 
+    // Calcular estadísticas detalladas
+    const sheetsGiftsCount = Object.values(sheetsGifts).reduce((sum, gifts) => sum + gifts.length, 0);
+    const appGiftsCount = Object.values(combinedWishlist).reduce((sum, gifts) => {
+      return sum + gifts.filter(gift => !gift.id.startsWith('gs-')).length;
+    }, 0);
+
     const stats = {
-      totalUsers: Object.keys(newWishlist).length,
-      totalGifts: Object.values(newWishlist).reduce((sum, gifts) => sum + gifts.length, 0),
-      userStats: Object.entries(newWishlist).map(([userId, gifts]) => ({
+      totalUsers: Object.keys(combinedWishlist).length,
+      totalGifts: Object.values(combinedWishlist).reduce((sum, gifts) => sum + gifts.length, 0),
+      sheetsGifts: sheetsGiftsCount,
+      appGifts: appGiftsCount,
+      userStats: Object.entries(combinedWishlist).map(([userId, gifts]) => ({
         userId,
-        giftCount: gifts.length
+        totalGifts: gifts.length,
+        sheetsGifts: gifts.filter(gift => gift.id.startsWith('gs-')).length,
+        appGifts: gifts.filter(gift => !gift.id.startsWith('gs-')).length
       }))
     };
 
+    console.log(`✅ Sincronización híbrida completada:`);
+    console.log(`📊 Google Sheets: ${sheetsGiftsCount} regalos`);
+    console.log(`📱 App: ${appGiftsCount} regalos`);
+    console.log(`🎯 Total: ${stats.totalGifts} regalos`);
+
     return NextResponse.json({ 
-      message: 'Wishlist updated successfully',
+      message: 'Sincronización híbrida completada exitosamente',
+      description: 'Se combinaron datos del Google Sheets con regalos existentes de la app',
       stats
     });
 

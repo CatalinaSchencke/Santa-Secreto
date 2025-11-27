@@ -182,7 +182,7 @@ export default function ViewGifts({ onNavigate }: ViewGiftsProps) {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {gifts.map((gift, index) => (
+                  {gifts.map((gift) => (
                     <div
                       key={gift.id}
                       className="border-2 border-gray-200 rounded-2xl p-6 hover:border-[#ce3b46] transition-colors"

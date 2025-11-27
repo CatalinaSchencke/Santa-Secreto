@@ -22,7 +22,16 @@ export default function Home({ onNavigate }: HomeProps) {
       
       if (syncResponse.ok) {
         const result = await syncResponse.json();
-        alert(`✅ Sincronización exitosa!\nUsuarios actualizados: ${result.stats.totalUsers}\nTotal de regalos: ${result.stats.totalGifts}`);
+        const { stats } = result;
+        alert(`✅ ${result.message}
+        
+📊 Estadísticas:
+• Google Sheets: ${stats.sheetsGifts} regalos
+• Desde la App: ${stats.appGifts} regalos  
+• Total combinado: ${stats.totalGifts} regalos
+• Usuarios con regalos: ${stats.totalUsers}
+
+${result.description || ''}`);
       } else {
         const errorData = await syncResponse.json();
         throw new Error(errorData.error || 'Error en la sincronización');

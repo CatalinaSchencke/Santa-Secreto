@@ -13,6 +13,8 @@ interface Gift {
   name: string;
   link?: string;
   image?: string;
+  readonly?: boolean; // Nuevo: indica si el regalo es solo lectura
+  source?: 'sheets' | 'app'; // Nuevo: indica la fuente del regalo
 }
 interface AddGiftProps {
   onNavigate: (view: 'home' | 'secret-friend' | 'add-gift' | 'view-gifts') => void;
@@ -34,6 +36,7 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
   const [loading, setLoading] = useState(false);
   const [hasExistingGifts, setHasExistingGifts] = useState(false);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [sheetsGifts, setSheetsGifts] = useState<Gift[]>([]); // Nuevo estado para regalos de Google Sheets
   
   // Modal states
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -112,14 +115,22 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
       
       if (existingGifts.length > 0) {
         setHasExistingGifts(true);
-        // Pre-populate form with existing gifts
+        
+        // Separar regalos por fuente
+        const sheetsGiftsFiltered = existingGifts.filter((gift: Gift) => gift.id.startsWith('gs-'));
+        const appGifts = existingGifts.filter((gift: Gift) => gift.id.startsWith('app-'));
+        
+        // Guardar regalos de Google Sheets para mostrarlos
+        setSheetsGifts(sheetsGiftsFiltered);
+        
+        // Pre-populate form con regalos editables de la app solamente
         const formGifts: GiftForm[] = [
           { name: '', link: '', image: '' },
           { name: '', link: '', image: '' },
           { name: '', link: '', image: '' },
         ];
         
-        existingGifts.forEach((gift: Gift, index: number) => {
+        appGifts.forEach((gift: Gift, index: number) => {
           if (index < 3) {
             formGifts[index] = {
               name: gift.name,
@@ -176,10 +187,11 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
   };
   
   const handleSubmit = async () => {
+    // Obtener regalos válidos solo de la app
     const validGifts = gifts
       .filter(g => g.name.trim() !== '')
       .map((g, idx) => ({
-        id: `gift-${Date.now()}-${idx}`,
+        id: `app-${Date.now()}-${idx}`,
         name: g.name,
         link: g.link || undefined,
         image: g.image || undefined,
@@ -193,7 +205,14 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
     
     setLoading(true);
     try {
-      await addGiftsToWishlist(selectedPerson, validGifts);
+      // Obtener regalos actuales para preservar los de Google Sheets
+      const existingGifts = await getGiftWishlist(selectedPerson);
+      const sheetsGifts = existingGifts.filter((gift: Gift) => gift.id.startsWith('gs-'));
+      
+      // Combinar: Google Sheets + nuevos de la app
+      const allGifts = [...sheetsGifts, ...validGifts];
+      
+      await addGiftsToWishlist(selectedPerson, allGifts);
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error saving wishlist:', error);
@@ -296,6 +315,49 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
                 </p>
               </div>
               
+              {/* Sección de regalos del Google Sheets (solo lectura) */}
+              {sheetsGifts.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-gray-800 text-xl font-bold mb-4 flex items-center gap-2">
+                    📄 Regalos sincronizados desde documento (Sheets)
+                    <span className="text-sm text-gray-500 font-normal">(solo lectura)</span>
+                  </h3>
+                  <div className="space-y-3">
+                    {sheetsGifts.map((gift) => (
+                      <div key={gift.id} className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="font-bold text-gray-800">{gift.name}</p>
+                            {gift.link && (
+                              <a 
+                                href={gift.link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 text-sm underline mt-1 inline-block"
+                              >
+                                Ver producto →
+                              </a>
+                            )}
+                          </div>
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                            Google Sheets
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-gray-600 text-sm mt-3 text-center">
+                    ℹ️ Estos regalos se sincronizan automáticamente desde el documento de Google Sheets y no se pueden editar desde la app.
+                  </p>
+                </div>
+              )}
+
+              {/* Sección de regalos editables desde la app */}
+              <h3 className="text-gray-800 text-xl font-bold mb-4 flex items-center gap-2">
+                Añadir regalos desde la aplicación
+                <span className="text-sm text-gray-500 font-normal">(editables)</span>
+              </h3>
+
               <div className="space-y-6">
                 {gifts.map((gift, index) => (
                   <div
