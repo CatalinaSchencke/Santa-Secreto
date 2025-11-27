@@ -10,21 +10,23 @@ const TABLE_NAME = 'kv_store_252a0d41';
 
 // Default participants for Familia Perez
 const DEFAULT_PARTICIPANTS = [
-  { id: "1", name: "Paula" },
-  { id: "2", name: "Catalina" },
-  { id: "3", name: "Brandon" },
-  { id: "4", name: "Pilar" },
-  { id: "5", name: "Rodolfo" },
-  { id: "6", name: "Marcelo" },
-  { id: "7", name: "Tatiana" },
-  { id: "8", name: "Alfredo" },
-  { id: "9", name: "Felipe" },
-  { id: "10", name: "Tata" },
-  { id: "11", name: "Tita" },
-  { id: "12", name: "Daniela" },
-  { id: "13", name: "Tito Hector" },
-  { id: "14", name: "Rafa" },
-  { id: "15", name: "Victoria" }
+  { id: "1", name: "Tatiana" },
+  { id: "2", name: "Alfredo" },
+  { id: "3", name: "Vane" },
+  { id: "4", name: "Pipe" },
+  { id: "5", name: "Tita" },
+  { id: "6", name: "Tata Lucho" },
+  { id: "7", name: "Marcelo" },
+  { id: "8", name: "Rodolfo" },
+  { id: "9", name: "Pilar" },
+  { id: "10", name: "Cata" },
+  { id: "11", name: "Brandon" },
+  { id: "12", name: "Paula" },
+  { id: "13", name: "Tía Brenda" },
+  { id: "14", name: "Daniela" },
+  { id: "15", name: "Héctor (Tito)" },
+  { id: "16", name: "Rafa" },
+  { id: "17", name: "Victoria" }
 ];
 
 function generateAssignments(participants) {
