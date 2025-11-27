@@ -205,12 +205,13 @@ export default function AddGift({ onNavigate }: AddGiftProps) {
     
     setLoading(true);
     try {
-      // Obtener regalos actuales para preservar los de Google Sheets
+      // Obtener regalos actuales para preservar los de Google Sheets y app existentes
       const existingGifts = await getGiftWishlist(selectedPerson);
       const sheetsGifts = existingGifts.filter((gift: Gift) => gift.id.startsWith('gs-'));
+      const existingAppGifts = existingGifts.filter((gift: Gift) => gift.id.startsWith('app-'));
       
-      // Combinar: Google Sheets + nuevos de la app
-      const allGifts = [...sheetsGifts, ...validGifts];
+      // Combinar: Google Sheets + regalos existentes de la app + nuevos de la app
+      const allGifts = [...sheetsGifts, ...existingAppGifts, ...validGifts];
       
       await addGiftsToWishlist(selectedPerson, allGifts);
       setShowSuccessModal(true);

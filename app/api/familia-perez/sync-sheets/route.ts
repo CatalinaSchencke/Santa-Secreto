@@ -146,6 +146,8 @@ export async function POST() {
       // Separar regalos de la app (sin prefijo 'gs-') de los del Google Sheets
       const appGifts = currentGifts.filter((gift: { id: string; name: string; link?: string; image?: string }) => !gift.id.startsWith('gs-'));
       
+      console.log(`👤 Usuario ${userId}: ${currentGifts.length} regalos actuales, ${sheetsUserGifts.length} del sheets, ${appGifts.length} de la app`);
+      
       // Combinar: primero Google Sheets, luego los de la app
       const combinedGifts = [...sheetsUserGifts, ...appGifts];
 
