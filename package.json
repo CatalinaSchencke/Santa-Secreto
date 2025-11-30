@@ -3,9 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node initialize-familia-perez.js",
     "dev": "next dev",
-    "prebuild": "node initialize-familia-perez.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -16,7 +14,8 @@
     "supabase:functions:serve": "supabase functions serve",
     "sync-participants": "node sync-participants.js",
     "update-participants": "npm run sync-participants && pnpm supabase functions deploy make-server-252a0d41 --project-ref vmfgvdndjwwjztgcgjtx",
-    "init-familia-perez": "node initialize-familia-perez.js"
+    "init-familia-perez": "node initialize-familia-perez.js",
+    "sorteo-familia-perez": "node initialize-familia-perez.js"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
