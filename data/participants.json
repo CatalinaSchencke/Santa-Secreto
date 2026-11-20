@@ -1,8 +1,8 @@
 [
   { "id": "1", "name": "Paula" },
   { "id": "2", "name": "Catalina" },
-  { "id": "3", "name": "Brandon" },
-  { "id": "4", "name": "Pilar" },
+  { "id": "3", "name": "Bastian" },
+  { "id": "4", "name": "Rafa" },
   { "id": "5", "name": "Rodolfo" },
   { "id": "6", "name": "Marcelo" },
   { "id": "7", "name": "Tatiana" },
@@ -12,6 +12,5 @@
   { "id": "11", "name": "Tita" },
   { "id": "12", "name": "Daniela" },
     { "id": "13", "name": "Tito Hector" },
-  { "id": "14", "name": "Rafa" },
-  { "id": "15", "name": "Victoria" }
+    {"id":"14", "name": "Victoria"}
 ]

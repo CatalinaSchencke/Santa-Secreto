@@ -4,7 +4,7 @@ import { google } from 'googleapis';
 
 const TABLE_NAME = 'kv_store_252a0d41';
 const SPREADSHEET_ID = '1iWiJ8kFPjeGV7h825iFzx2K-sWebLyLm5kQJjlntf9E';
-const RANGE = 'B4:K20'; // Columnas B a K, filas 4 a 20
+const RANGE = 'B4:K18'; // Columnas B a K, filas 4 a 18
 
 // Mapeo de orden en el spreadsheet con user IDs
 const SPREADSHEET_ORDER_TO_USER_ID = [
@@ -16,15 +16,13 @@ const SPREADSHEET_ORDER_TO_USER_ID = [
   "6",   // Tata Lucho (fila 9)
   "7",   // Marcelo (fila 10)
   "8",   // Rodolfo (fila 11)
-  "9",   // Pilar (fila 12)
-  "10",  // Cata (fila 13)
-  "11",  // Brandon (fila 14)
-  "12",  // Paula (fila 15)
-  "13",  // Tía Brenda (fila 16)
-  "14",  // Daniela (fila 17)
-  "15",  // Héctor (Tito) (fila 18)
-  "16",  // Rafa (fila 19)
-  "17"   // Victoria (fila 20)
+  "9",   // Cata (fila 12)
+  "10",  // Bastian (fila 13)
+  "11",  // Paula (fila 14)
+  "12",  // Daniela (fila 15)
+  "13",  // Héctor (Tito) (fila 16)
+  "14",  // Rafa (fila 17)
+  "15"   // Victoria (fila 18)
 ];
 
 export async function POST() {

@@ -18,15 +18,13 @@ const DEFAULT_PARTICIPANTS = [
   { id: "6", name: "Tata Lucho" },
   { id: "7", name: "Marcelo" },
   { id: "8", name: "Rodolfo" },
-  { id: "9", name: "Pilar" },
-  { id: "10", name: "Cata" },
-  { id: "11", name: "Brandon" },
-  { id: "12", name: "Paula" },
-  { id: "13", name: "Tía Brenda" },
-  { id: "14", name: "Daniela" },
-  { id: "15", name: "Héctor (Tito)" },
-  { id: "16", name: "Rafa" },
-  { id: "17", name: "Victoria" }
+  { id: "9", name: "Cata" },
+  { id: "10", name: "Bastian" },
+  { id: "11", name: "Paula" },
+  { id: "12", name: "Daniela" },
+  { id: "13", name: "Héctor (Tito)" },
+  { id: "14", name: "Rafa" },
+  { id: "15", name: "Victoria" }
 ];
 
 function generateAssignments(participants) {
