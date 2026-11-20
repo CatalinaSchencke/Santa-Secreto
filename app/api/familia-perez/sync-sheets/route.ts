@@ -1,29 +1,14 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '../../../../lib/supabase';
 import { google } from 'googleapis';
+import participants from '../../../../data/participants.json';
 
 const TABLE_NAME = 'kv_store_252a0d41';
 const SPREADSHEET_ID = '1iWiJ8kFPjeGV7h825iFzx2K-sWebLyLm5kQJjlntf9E';
-const RANGE = 'B4:K18'; // Columnas B a K, filas 4 a 18
+const FIRST_ROW = 4;
+const RANGE = `B${FIRST_ROW}:K${FIRST_ROW + participants.length - 1}`;
 
-// Mapeo de orden en el spreadsheet con user IDs
-const SPREADSHEET_ORDER_TO_USER_ID = [
-  "1",   // Tatiana (fila 4)
-  "2",   // Alfredo (fila 5)  
-  "3",   // Vane (fila 6)
-  "4",   // Pipe (fila 7)
-  "5",   // Tita (fila 8)
-  "6",   // Tata Lucho (fila 9)
-  "7",   // Marcelo (fila 10)
-  "8",   // Rodolfo (fila 11)
-  "9",   // Cata (fila 12)
-  "10",  // Bastian (fila 13)
-  "11",  // Paula (fila 14)
-  "12",  // Daniela (fila 15)
-  "13",  // Héctor (Tito) (fila 16)
-  "14",  // Rafa (fila 17)
-  "15"   // Victoria (fila 18)
-];
+const normalizeName = (name: string) => name.normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('es');
 
 export async function POST() {
   try {
@@ -63,12 +48,45 @@ export async function POST() {
       );
     }
 
+    const { data: storedParticipants, error: participantsError } = await supabaseAdmin
+      .from(TABLE_NAME)
+      .select('value')
+      .eq('key', 'familia-perez:participants')
+      .maybeSingle();
+
+    if (participantsError) throw participantsError;
+    const saved = storedParticipants?.value;
+    if (
+      !Array.isArray(saved) ||
+      saved.length !== participants.length ||
+      participants.some((participant, index) =>
+        saved[index]?.id !== participant.id || saved[index]?.name !== participant.name
+      )
+    ) {
+      return NextResponse.json(
+        { error: 'Los participantes publicados no coinciden con el sorteo guardado. No se sincronizaron los regalos.' },
+        { status: 409 }
+      );
+    }
+
+    for (let index = 0; index < participants.length; index++) {
+      const sheetName = String(sheetData[index]?.[0] ?? '');
+      if (normalizeName(sheetName) !== normalizeName(participants[index].name)) {
+        return NextResponse.json(
+          { error: `El nombre de la fila ${FIRST_ROW + index} de Google Sheets no coincide con ${participants[index].name}. No se sincronizaron los regalos.` },
+          { status: 400 }
+        );
+      }
+    }
+
     // 🔄 STEP 1: Obtener wishlist actual de Supabase
-    const { data: currentWishlistData } = await supabaseAdmin
+    const { data: currentWishlistData, error: wishlistError } = await supabaseAdmin
       .from(TABLE_NAME)
       .select('value')
       .eq('key', 'familia-perez:wishlist')
-      .single();
+      .maybeSingle();
+
+    if (wishlistError) throw wishlistError;
 
     const currentWishlist = currentWishlistData?.value || {};
     console.log('📋 Wishlist actual cargado');
@@ -77,7 +95,7 @@ export async function POST() {
     const sheetsGifts: { [key: string]: Array<{ id: string; name: string; link?: string; image?: string }> } = {};
 
     sheetData.forEach((row: (string | number)[], index: number) => {
-      const userId = SPREADSHEET_ORDER_TO_USER_ID[index];
+      const userId = participants[index]?.id;
       
       if (!userId || !row || row.length < 2) return;
 

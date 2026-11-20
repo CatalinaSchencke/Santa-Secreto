@@ -44,7 +44,7 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
       const response = await fetch(apiPath);
       if (response.ok) {
         const data = await response.json();
-        setParticipants(data);
+        setParticipants(familyInfo.code === 'PEREZ' ? data.participants : data);
       }
     } catch (error) {
       console.error('Error loading participants:', error);
@@ -267,7 +267,7 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
               </h2>
               
               {/* Agregar participante */}
-              <div className="mb-6">
+              {familyInfo.code !== 'PEREZ' && <div className="mb-6">
                 <input
                   type="text"
                   value={newParticipantName}
@@ -283,7 +283,7 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
                 >
                   {isLoading ? 'Agregando...' : 'Agregar Participante'}
                 </button>
-              </div>
+              </div>}
 
               {/* Lista de participantes */}
               {isLoadingParticipants ? (
@@ -307,7 +307,7 @@ export default function FamilyHome({ familyInfo, onNavigate }: FamilyHomeProps) 
                 </div>
               )}
 
-              {participants.length >= 2 && (
+              {familyInfo.code !== 'PEREZ' && participants.length >= 2 && (
                 <button
                   onClick={generateAssignments}
                   disabled={isLoading}

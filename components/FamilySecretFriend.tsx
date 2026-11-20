@@ -13,7 +13,7 @@ interface FamilySecretFriendProps {
 }
 
 interface Participant {
-  id: number;
+  id: string | number;
   name: string;
 }
 
@@ -33,10 +33,12 @@ export default function FamilySecretFriend({ familyCode, familyName, onNavigate 
 
   const loadParticipants = useCallback(async () => {
     try {
-      const response = await fetch(`/api/families/${familyCode}/participants`);
+      const response = await fetch(familyCode === 'PEREZ'
+        ? '/api/familia-perez/participants'
+        : `/api/families/${familyCode}/participants`);
       if (response.ok) {
         const data = await response.json();
-        setParticipants(data);
+        setParticipants(familyCode === 'PEREZ' ? data.participants : data);
       }
     } catch (error) {
       console.error('Error loading participants:', error);
@@ -60,7 +62,7 @@ export default function FamilySecretFriend({ familyCode, familyName, onNavigate 
       const selectedPersonName = participants.find(p => p.id.toString() === selectedPerson)?.name;
       
       const apiPath = familyCode === 'PEREZ' 
-        ? `/api/familia-perez/assignments?person=${encodeURIComponent(selectedPersonName || '')}` 
+        ? `/api/familia-perez/assignments?person=${encodeURIComponent(selectedPerson)}`
         : `/api/families/${familyCode}/assignments?person=${encodeURIComponent(selectedPersonName || '')}`;
         
       const response = await fetch(apiPath);
