@@ -16,21 +16,16 @@ const SPREADSHEET_ID = '1iWiJ8kFPjeGV7h825iFzx2K-sWebLyLm5kQJjlntf9E';
 const ROW_TO_USER_ID = {
   4: "1",   // Tatiana
   5: "2",   // Alfredo  
-  6: "3",   // Vane
-  7: "4",   // Pipe
-  8: "5",   // Tita
-  9: "6",   // Tata Lucho
-  10: "7",  // Marcelo
-  11: "8",  // Rodolfo
-  12: "9",  // Pilar
-  13: "10", // Cata
-  14: "11", // Brandon
-  15: "12", // Paula
-  16: "13", // Tía Brenda
-  17: "14", // Daniela
-  18: "15", // Héctor (Tito)
-  19: "16", // Rafa
-  20: "17"  // Victoria
+  6: "3",   // Pipe
+  7: "4",   // Tita
+  8: "5",   // Tata Lucho
+  9: "6",  // Marcelo
+  10: "7",  // Rodolfo
+  11: "8", // Cata
+  12: "9", // Bastian
+  13: "10", // Paula
+  14: "11", // Daniela
+  15: "12", // Héctor (Tito)
 };
 
 async function syncFromGoogleSheets() {
