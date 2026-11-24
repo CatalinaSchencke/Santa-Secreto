@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '../../../../lib/supabase';
+import { verifyFamiliaPerezConsistency } from '../../../../lib/familia-perez-consistency';
 
 export async function GET() {
   try {
+    const inconsistent = await verifyFamiliaPerezConsistency();
+    if (inconsistent) return inconsistent;
+
     // Obtener participantes desde Supabase
     const { data, error } = await supabaseAdmin
       .from('kv_store_252a0d41')

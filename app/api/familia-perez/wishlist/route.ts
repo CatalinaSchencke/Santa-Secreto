@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '../../../../lib/supabase';
+import { verifyFamiliaPerezConsistency } from '../../../../lib/familia-perez-consistency';
 
 export async function GET(request: Request) {
   try {
+    const inconsistent = await verifyFamiliaPerezConsistency();
+    if (inconsistent) return inconsistent;
+
     const { searchParams } = new URL(request.url);
     const person = searchParams.get('person');
     
@@ -34,6 +38,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const inconsistent = await verifyFamiliaPerezConsistency();
+    if (inconsistent) return inconsistent;
+
     const body = await request.json();
     const { person, gifts } = body;
 

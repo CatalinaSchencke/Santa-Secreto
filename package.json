@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/verify-familia-perez.mjs",
+    "verify-familia-perez": "node scripts/verify-familia-perez.mjs --force",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
