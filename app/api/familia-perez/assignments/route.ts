@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '../../../../lib/supabase';
+import { verifyFamiliaPerezConsistency } from '../../../../lib/familia-perez-consistency';
 
 interface Participant {
   id: string;
@@ -17,6 +18,9 @@ const PARTICIPANTS_KEY = 'familia-perez:participants';
 
 export async function GET(request: NextRequest) {
   try {
+    const inconsistent = await verifyFamiliaPerezConsistency();
+    if (inconsistent) return inconsistent;
+
     const { searchParams } = new URL(request.url);
     const person = searchParams.get('person');
     
